@@ -1,30 +1,20 @@
-name: Build APK
+workflows:
+  android-debug:
+    name: Build Android APK
+    max_build_duration: 120
+    instance_type: linux_x2
 
-on:
-  workflow_dispatch:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Download repository
-        uses: actions/checkout@v4
-
-      - name: Set up Java
-        uses: actions/setup-java@v4
-        with:
-          distribution: temurin
-          java-version: '17'
-
+    scripts:
       - name: Make Gradle executable
-        run: chmod +x ./gradlew
+        script: chmod +x ./gradlew
+
+      - name: Configure Android SDK
+        script: |
+          echo "sdk.dir=$ANDROID_SDK_ROOT" > "$CM_BUILD_DIR/local.properties"
 
       - name: Build debug APK
-        run: ./gradlew assembleDebug
+        script: |
+          ./gradlew clean assembleDebug
 
-      - name: Upload APK
-        uses: actions/upload-artifact@v4
-        with:
-          name: android-debug-apk
-          path: '**/build/outputs/apk/debug/*.apk'
+    artifacts:
+      - "**/build/outputs/apk/debug/*.apk"
